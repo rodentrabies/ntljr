@@ -15,14 +15,17 @@
 ;;
 
 (def Definition
-  "A schema for a definition data structure"
+  "A schema for a definition data structure."
   {:rating    scm/Int     ;; integral value that represents 
    :author    scm/Str     ;; username of the person who wrote it
    :crdate    scm/Str     ;; date of creation
    :text      scm/Str     ;; markdown-formated payload
    :resources [scm/Int]}) ;; static resources used in markdown (pictures etc.)
 
-(declare validate-definition)
+(defn validate-definition
+  "Validation logic to check if definition is consistent."
+  [defmap]
+  (scm/validate Definition defmap))
 
 (defn make-definition
   "Constructor for a definition object.
@@ -35,13 +38,6 @@
     :crdate crdate          ;; date of creation
     :text text              ;; markdown-formated payload
     :resources resources})) ;; static resources used in markdown (pictures etc.)
-
-
-(defn validate-definition
-  "Validation logic to check if definition is consistent."
-  [defmap]
-  (scm/validate Definition defmap))
-
 
 (defn definition-rating [definition]
   (:rating definition))
@@ -63,6 +59,3 @@
 
 (defn definition-seed [definition]
   (select-keys definition [:text :resources]))
-
-
-
