@@ -33,11 +33,11 @@
    to make system more data-centric."
   [author crdate text resources]
   (validate-definition
-   {:rating 0               ;; integral value that represents 
-    :author author          ;; username of the person who wrote it
-    :crdate crdate          ;; date of creation
-    :text text              ;; markdown-formated payload
-    :resources resources})) ;; static resources used in markdown (pictures etc.)
+   {:rating 0
+    :author author
+    :crdate crdate
+    :text text
+    :resources resources}))
 
 (defn definition-rating [definition]
   (:rating definition))

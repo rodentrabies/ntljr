@@ -8,7 +8,8 @@
             [ntljr.core :as ntljr]))
 
 (defroutes ntljrapp
-  (GET "/" [] (ntljr/show-test-definition)))
+  (GET "/" [] (ntljr/show-test-definition))
+  (route/not-found "<h1>Page not found</h1>"))
 
 (defn -main []
   (ring/run-jetty ntljrapp {:port 3000}))
