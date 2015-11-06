@@ -8,4 +8,7 @@ All notable changes to this project will be documented in this file. This change
 - Core data description (Definition.clj).
 - General structure of the project.
 
+### Changed
+- .properties config file replaced with .clj file - configuration will be in clojure too
+
 

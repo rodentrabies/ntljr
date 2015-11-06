@@ -2,20 +2,23 @@
 
 (ns ntljr.core
   (:require [clojure.pprint :as pp]
+            [schema.core :as scm]
             [ntljr.definition :as d]
             [markdown.core :as md]
             [clojure.java.io :as io]))
 
-(defn load-props
-  "Load properties to configure system and connections."
-  [file-name]
-  (with-open [reader (io/reader file-name)] 
-    (let [props (java.util.Properties.)]
-      (.load props reader)
-      (into {} (for [[k v] props]
-                 [(keyword k) (read-string v)])))))
+;; (def Config
+;;   {:dsize scm/Int
+;;    :host scm/Str
+;;    :port scm/Str
+;;    :collection scm/Str})
 
-
+(defn load-config
+  "Load configuration file to get initialization data
+  (file must contain clojure map)."
+  [filename]
+  (with-open [r (io/reader filename)]
+    (read (java.io.PushbackReader. r))))
 
 (defn show-definition
   "Transform definition to html."
