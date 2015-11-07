@@ -1,8 +1,8 @@
 {;; core
- :dsize 200 ; size of definition seed
+ :dsize 200 
  ;; storage
  :dbhost "localhost" 
  :dbport "27017"
- :collname "Definitions"}
+ :dbcoll "Definitions"}
 
 

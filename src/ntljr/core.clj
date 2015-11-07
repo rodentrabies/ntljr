@@ -7,18 +7,20 @@
             [markdown.core :as md]
             [clojure.java.io :as io]))
 
-;; (def Config
-;;   {:dsize scm/Int
-;;    :host scm/Str
-;;    :port scm/Str
-;;    :collection scm/Str})
+(def Config
+  {;; core config
+   :dsize scm/Int    ;; size of the definition seed
+   ;; database config
+   :dbhost scm/Str   ;; database connection hostname 
+   :dbport scm/Str   ;; database connection port
+   :dbcoll scm/Str}) ;; database collection name
 
 (defn load-config
   "Load configuration file to get initialization data
   (file must contain clojure map)."
   [filename]
   (with-open [r (io/reader filename)]
-    (read (java.io.PushbackReader. r))))
+    (scm/validate Config (read (java.io.PushbackReader. r)))))
 
 (defn show-definition
   "Transform definition to html."
@@ -26,12 +28,10 @@
   (md/md-to-html-string (d/definition-text definition)
                         :reference-links? true))
 
-
-
-
-
-
-
+(defn initialize
+  "Top-level function."
+  [path-to-config]
+  (load-config path-to-config))
 
 
 
