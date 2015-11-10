@@ -12,6 +12,7 @@
   {:rating    scm/Int     ;; integral value that shows popularity of the definition
    :author    scm/Str     ;; username of the person who wrote it
    :crdate    scm/Str     ;; date of creation
+   :name      scm/Str     ;; notion that is being defined
    :text      scm/Str     ;; markdown-formated payload
    :resources [scm/Int]}) ;; static resources used in markdown (pictures etc.)
 
@@ -23,13 +24,17 @@
 (defn make-definition
   "Constructor for a definition object. Definition is represented
    as a simple map to make system more data-centric."
-  [author crdate text resources]
+  [author crdate name text resources]
   (validate-definition
    {:rating 0
     :author author
     :crdate crdate
+    :name name
     :text text
     :resources resources}))
+
+(defn definition-name [definition]
+  (:name definition))
 
 (defn definition-rating [definition]
   (:rating definition))
@@ -47,7 +52,7 @@
   (:resources definition))
 
 (defn definition-header [definition]
-  (select-keys definition [:rating :author :crdate]))
+  (select-keys definition [:rating :author :crdate :name]))
 
 (defn definition-seed [definition]
-  (select-keys definition [:text :resources]))
+  (select-keys definition [:name :text :resources]))

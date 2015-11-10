@@ -1,5 +1,5 @@
 {;; core
- :dsize 200 
+ :defsize 200 
  ;; storage
  :dbhost "localhost" 
  :dbport "27017"
