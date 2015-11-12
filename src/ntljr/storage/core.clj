@@ -9,16 +9,19 @@
 ;; functionality
 ;;
 
-(defn connect-to-store [& rest]
-  (db/connect rest))
+;; TODO: abstract out operations into protocol ?
 
+(defn initialize-storage
+  "Initialize storage using config data."
+  [conf]
+  (db/initialize-storage conf))
 
-(defn add-definition
+(defn store-definition
   "Add definition to the persistent storage."
-  []
-  nil)
+  [context definition]
+  (db/store-definition context definition))
 
 (defn search-definitions
-  ""
-  []
-  nil)
+  "General search utility"
+  [context]
+  (db/search-definitions context))

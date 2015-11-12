@@ -1,23 +1,23 @@
 (ns ntljr.storage.mongodb
-  (:require [monger.core :as mg]))
+  (:require [monger.core :as mg]
+            [monger.collection :as mconn]))
 
-(defn connect
-  "Get a connection object for a given db server."
-  [host port]
-  (let [server-addr (mg/server-address host port)]
-    (mg/connect server-addr)))
 
-(defn- get-db [conn dbname]
-  (mg/get-db dbname))
+(defn initialize-storage 
+  "Create general db structure and return database contest map."
+  [conf]
+  (let [sa (mg/server-address (:dbhost conf) (:dbport conf))
+        conn (mg/connect sa)
+        db (mg/get-db conn "ntljr")]
+    {:conn conn :db db}))
 
-(defn add-definition
+(defn store-definition
   "Add definition to the persistent storage."
-  [conn definition]
-  ;; TODO: impl
-  nil)
+  [context definition]
+  (let [resources nil]
+   (mconn/insert (:db context) "definitions" definition)))
 
 (defn search-definitions
   "Basic searching functionality."
-  [conn query]
-  ;; TODO: impl
-  nil)
+  [context]
+  (mconn/find-maps (:db context) "definitions"))

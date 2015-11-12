@@ -5,15 +5,18 @@
             [schema.core :as scm]
             [ntljr.definition :as d]
             [markdown.core :as md]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+
+            [ntljr.storage.core :as storage]))
 
 (def Config
   {;; core config
    :defsize scm/Int    ;; size of the definition seed
    ;; database config
    :dbhost scm/Str   ;; database connection hostname 
-   :dbport scm/Str   ;; database connection port
-   :dbcoll scm/Str}) ;; database collection name
+   :dbport scm/Int   ;; database connection port
+   :dbuser scm/Str   ;; database user
+   :dbupwd scm/Str}) ;; user password
 
 (defn load-config
   "Load configuration file to get initialization data
@@ -50,7 +53,11 @@
 
 
 
-
+(defn test-run [conffile]
+  (let [conf (load-config conffile)
+        dbcontext (storage/initialize-storage conf)]
+    (storage/store-definition dbcontext test-definition)
+    (storage/search-definitions dbcontext)))
 
 
 
