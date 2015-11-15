@@ -7,7 +7,7 @@
             [markdown.core :as md]
             [clojure.java.io :as io]
 
-            [ntljr.storage.core :as storage]))
+            [ntljr.storage :as storage]))
 
 (def Config
   {;; core config
@@ -36,10 +36,10 @@
   []
   )
 
-(defn search-definitions-by-name
-  "Return definitions with a given name"
+(defn search-definitions
+  "Return all definitions from a system"
   [name]
-  )
+  nil)
 
 (defn show-definition
   "Transform definition to html."

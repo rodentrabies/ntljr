@@ -1,6 +1,8 @@
-(ns ntljr.storage.mongodb
+(ns ntljr.storage
   (:require [monger.core :as mg]
-            [monger.collection :as mconn]))
+            [monger.collection :as mcoll])
+  
+  (:require [ntljr.definition :as df]))
 
 
 (defn initialize-storage 
@@ -14,10 +16,12 @@
 (defn store-definition
   "Add definition to the persistent storage."
   [context definition]
-  (let [resources nil]
-   (mconn/insert (:db context) "definitions" definition)))
+  (let [resources (df/definition-resources definition)]
+   (mcoll/insert (:db context) "definitions" definition)))
 
 (defn search-definitions
   "Basic searching functionality."
   [context]
-  (mconn/find-maps (:db context) "definitions"))
+  (mcoll/find-maps (:db context) "definitions"))
+
+(defn )
