@@ -13,6 +13,7 @@
    :author    scm/Str     ;; username of the person who wrote it
    :crdate    scm/Str     ;; date of creation
    :name      scm/Str     ;; notion that is being defined
+   ;; :path      [scm/Str]   ;; ordered vector of strings that represents abstract category of the notion
    :text      scm/Str     ;; markdown-formated payload
    :resources [scm/Int]}) ;; static resources used in markdown (pictures etc.)
 

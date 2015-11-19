@@ -6,6 +6,8 @@
   :dependencies [[prismatic/schema "1.0.3"]
                  [markdown-clj "0.9.78"]
                  [com.novemberain/monger "3.0.1"]
+                 [danlentz/clj-uuid "0.1.6"]
+                 [clj-time "0.11.0"]
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]
                  [ring/ring-jetty-adapter "1.4.0"]]

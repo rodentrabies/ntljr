@@ -16,12 +16,11 @@
 (defn store-definition
   "Add definition to the persistent storage."
   [context definition]
-  (let [resources (df/definition-resources definition)]
+  (let [resources (df/definition-resources definition)
+        ]
    (mcoll/insert (:db context) "definitions" definition)))
 
 (defn search-definitions
   "Basic searching functionality."
   [context]
   (mcoll/find-maps (:db context) "definitions"))
-
-(defn )
