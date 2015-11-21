@@ -36,8 +36,8 @@
   "Replace image links in markdown string with stubs
    and create a map { UUID -> ImageURL }, returning vec [mdstring imagemap]"
   [s]
-  (let [images (re-seq #"(!\[.*?\]\()(.+?)(\))" s)
-        immap (zipmap (distinct images) (repeatedly (comp str uuid/v1)))
+  (let [images (distinct (map #(% 2) (re-seq #"(!\[.*?\]\()(.+?)( .*?\)|\))" s)))
+        immap (zipmap images (repeatedly (comp str uuid/v1)))
         newstr (reduce (fn [s im]
                          (clojure.string/replace s im (immap im)))
                        s
@@ -79,6 +79,7 @@
 
 
 ![Alt text](http://25.io/mou/img/1.png \"Title\")
+![Other im](http://bla.bla1.g/1.png)
 
 ")
 
