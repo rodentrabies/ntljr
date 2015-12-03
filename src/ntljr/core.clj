@@ -1,15 +1,23 @@
-;; ## Core functionality
+;;;;----------------------------------------------------------------------------
+;;;; This namespace describes core functions of the system such as creating and
+;;;; adding new definitions, configuring and running searches, loading configu-
+;;;; ration files etc
+;;;;----------------------------------------------------------------------------
 
 (ns ntljr.core
   (:require [clojure.pprint :as pp]
             [schema.core :as scm]
             [clj-time.core :as time]
-            [clj-uuid :as uuid]
             [markdown.core :as md]
             [clojure.java.io :as io])
+
   (:require [ntljr.storage :as storage]
             [ntljr.definition :as d]))
 
+
+;;;-----------------------------------------------------------------------------
+;;; Configuration file loading
+;;;-----------------------------------------------------------------------------
 (def Config
   {;; core config
    :defsize scm/Int    ;; size of the definition seed
@@ -30,38 +38,57 @@
   "Top-level function.
    TODO: move database connection here, returning more usable config data."
   [path-to-config]
-  (load-config path-to-config))
+  (assoc (storage/initialize-storage (load-config path-to-config))
+         :username "admin"))
+;;;-----------------------------------------------------------------------------
 
-(defn extract-image-urls
-  "Replace image links in markdown string with stubs
-   and create a map { UUID -> ImageURL }, returning vec [mdstring imagemap]"
-  [s]
-  (let [images (distinct (map #(% 2) (re-seq #"(!\[.*?\]\()(.+?)( .*?\)|\))" s)))
-        immap (zipmap images (repeatedly (comp str uuid/v1)))
-        newstr (reduce (fn [s im]
-                         (clojure.string/replace s im (immap im)))
-                       s
-                       images)]
-    [newstr (zipmap (vals immap) (keys immap))]))
+
+;;;-----------------------------------------------------------------------------
+;;; Creating new definition
+;;;-----------------------------------------------------------------------------
+(def ^:const md-im-regex
+  "Regex to extract image descriptions from markdown text."
+  #"(!\[.*?\]\()(.+?)( .*?\)|\))")
+
+(defn extract-image-url [s]
+  (let [images (into [] (map #(% 2) (re-seq md-im-regex s)))]
+    (case (count images)
+      0 :none
+      1 (images 0)
+      ;; TODO: add error case
+      :else nil))) 
 
 (defn create-definition
   "Create definition from character string entered by user, handle resources."
-  [name str context]
+  [name s context]
   (let [crdate (str (time/now))
-        uuid (uuid/v1)
         author (:username context)
-        [mdtext resmap] (extract-image-urls str)]
-    (d/make-definition author crdate name mdtext resmap)))
+        image (extract-image-url s)]
+    (d/make-definition author crdate name s image)))
 
-(defn search-definitions
+(defn save-definition
+  "Save definition to a database."
+  [context definition]
+  (storage/store-metadata
+   context
+   (d/definition-metadata definition)
+   (storage/store-text context (:text definition))
+   (storage/store-graphic context (:graphic definition))))
+
+(defn add-definition
+  "Top-level function."
+  [name str context]
+  (save-definition context (create-definition name str context)))
+
+(defn search-definitions-by-name
   "Return all definitions from a system"
-  [name]
-  nil)
+  [context name]
+  (storage/search-definitions-by-name context name))
 
 (defn show-definition
   "Transform definition to html."
   [definition]
-  (md/md-to-html-string (d/definition-text definition)
+  (md/md-to-html-string (:text definition)
                         :reference-links? true))
 
 
@@ -69,7 +96,9 @@
 
 
 
-
+;;;-----------------------------------------------------------------------------
+;;; testing
+;;;-----------------------------------------------------------------------------
 (def test-markdown
   "
 ## Test definition
@@ -79,7 +108,6 @@
 
 
 ![Alt text](http://25.io/mou/img/1.png \"Title\")
-![Other im](http://bla.bla1.g/1.png)
 
 ")
 
@@ -90,13 +118,14 @@
                      "2015.11.03"
                      "Test"
                      test-markdown
-                     []))
+                     "graphic"))
 
 (defn test-run [conffile]
   (let [conf (load-config conffile)
         dbcontext (storage/initialize-storage conf)]
-    (storage/store-definition dbcontext test-definition)
-    (storage/search-definitions dbcontext)))
+    (save-definition dbcontext test-definition)
+    (search-definitions-by-name dbcontext "some name")))
 
 (defn show-test-definition []
   (show-definition test-definition))
+;;;-----------------------------------------------------------------------------

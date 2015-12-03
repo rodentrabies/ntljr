@@ -9,13 +9,12 @@
 
 (def Definition
   "A schema for a definition data structure."
-  {:rating    scm/Int     ;; integral value that shows popularity of the definition
-   :author    scm/Str     ;; username of the person who wrote it
-   :crdate    scm/Str     ;; date of creation
-   :name      scm/Str     ;; notion that is being defined
-   ;; :path      [scm/Str]   ;; ordered vector of strings that represents abstract category of the notion
-   :text      scm/Str     ;; markdown-formated payload
-   :resources [scm/Int]}) ;; static resources used in markdown (pictures etc.)
+  {:rating scm/Int   ;; integral value that shows popularity of the definition
+   :author scm/Str   ;; username of the person who wrote it
+   :crdate scm/Str   ;; date of creation
+   :name scm/Str   ;; notion that is being defined
+   :text scm/Str   ;; markdown-formated payload
+   (scm/optional-key :graphic) scm/Str}) ;; static resources used in markdown (pictures etc.)
 
 (defn validate-definition
   "Validation logic to check if definition is consistent."
@@ -25,35 +24,12 @@
 (defn make-definition
   "Constructor for a definition object. Definition is represented
    as a simple map to make system more data-centric."
-  [author crdate name text resources]
+  [author crdate name text graphic]
   (validate-definition
-   {:rating 0
-    :author author
-    :crdate crdate
-    :name name
-    :text text
-    :resources resources}))
+   (let [m {:rating 0 :author author :crdate crdate :name name :text text}]
+     (if (= graphic :none)
+       m
+       (assoc m :graphic graphic)))))
 
-(defn definition-name [definition]
-  (:name definition))
-
-(defn definition-rating [definition]
-  (:rating definition))
-
-(defn definition-author [definition]
-  (:author definition))
-
-(defn definition-crdate [definition]
-  (:crdate definition))
-
-(defn definition-text [definition]
-  (:text definition))
-
-(defn definition-resources [definition]
-  (:resources definition))
-
-(defn definition-header [definition]
+(defn definition-metadata [definition]
   (select-keys definition [:rating :author :crdate :name]))
-
-(defn definition-seed [definition]
-  (select-keys definition [:name :text :resources]))
