@@ -1,14 +1,13 @@
 (ns ntljr.storage
+  (:import org.bson.types.ObjectId)
   (:require [monger.core :as mg]
-            [monger.collection :as mcoll]
-            [pandect.algo.sha256 :as sha])
+            [monger.collection :as mcoll])
   
   (:require [ntljr.definition :as df]))
 
 (def database-name "ntljr") ;; name of the database to use
-(def markdown-collection "definitions") ;; collection to store markdown strings
-(def meta-collection "metadata") ;; collection to store metadata
-(def graphic-collection "images") ;; collection to store images
+(def text-collection "text") ;; collection to store markdown strings
+(def metadata-collection "metadata") ;; collection to store metadata
 
 (defn initialize-storage 
   "Create general db structure and return database context map."
@@ -21,50 +20,34 @@
 ;;;-----------------------------------------------------------------------------
 ;;; store
 ;;;-----------------------------------------------------------------------------
-(defn store-graphic 
-  "Save graphic (image) with it's hash-sum as key and return key."
-  [context graphic]
-  ;; currently just insert graphic
-  (and graphic
-       (let [hash (sha/sha256 graphic)]
-         (mcoll/update (:db context) graphic-collection {} {:_id hash :blob graphic} {:upsert true}) 
-         hash)))
-
 (defn store-text [context text]
-  (str (:_id (mcoll/insert-and-return (:db context)
-                                      markdown-collection
-                                      {:text text}))))
+  (str (:_id (mcoll/insert-and-return
+              (:db context) text-collection {:text text}))))
 
 (defn store-metadata
-  "Store metadata with foreign keys for text (tid) and graphic (gid)."
-  [context meta tid gid]
+  "Store metadata with foreign keys for text (tid)."
+  [context meta tid]
   (str (:_id (mcoll/insert-and-return
-              (:db context)
-              meta-collection
-              (assoc meta :_textID tid :_graphicID gid)))))
+              (:db context) metadata-collection (assoc meta :_textID tid)))))
 ;;;-----------------------------------------------------------------------------
 
 
 ;;;-----------------------------------------------------------------------------
 ;;; search
 ;;;-----------------------------------------------------------------------------
-(defn search-text [context tid]
-  (:text (mcoll/find-one-as-map (:db context) markdown-collection {:_id tid})))
-
-(defn search-graphic [context gid]
-  (if gid
-    (:blob (mcoll/find-one-as-map (:db context) graphic-collection {:_id gid}))
-    :none))
+(defn search-text
+  "Text ID (tid) comes as a string to abstract out MongoDB objects."
+  [context tid]
+  (:text (mcoll/find-one-as-map
+          (:db context) text-collection {:_id (ObjectId. tid)})))
 
 (defn search-definitions-by-name
   "Basic searching functionality."
   [context name]
-  (let [meta-list (mcoll/find-maps (:db context) meta-collection {:name name})]
+  (let [mlist (mcoll/find-maps (:db context) metadata-collection {:name name})]
     (map (fn [x]
-           (let [tid (:_textID x)
-                 gid (:_graphicID x)]
-             (assoc (dissoc x :_textID :_graphicID)
-                    :text (search-text context tid)
-                    :graphic (search-graphic context gid))))
-         meta-list)))
+           (let [tid (:_textID x)]
+             (assoc (dissoc x :_textID)
+                    :text (search-text context tid))))
+         mlist)))
 ;;;-----------------------------------------------------------------------------

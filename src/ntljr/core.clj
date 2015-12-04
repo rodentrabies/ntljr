@@ -46,25 +46,16 @@
 ;;;-----------------------------------------------------------------------------
 ;;; Creating new definition
 ;;;-----------------------------------------------------------------------------
-(def ^:const md-im-regex
-  "Regex to extract image descriptions from markdown text."
-  #"(!\[.*?\]\()(.+?)( .*?\)|\))")
-
-(defn extract-image-url [s]
-  (let [images (into [] (map #(% 2) (re-seq md-im-regex s)))]
-    (case (count images)
-      0 :none
-      1 (images 0)
-      ;; TODO: add error case
-      :else nil))) 
+;; (def ^:const md-im-regex
+;;   "Regex to extract image descriptions from markdown text."
+;;   #"(!\[.*?\]\()(.+?)( .*?\)|\))")
 
 (defn create-definition
   "Create definition from character string entered by user, handle resources."
   [name s context]
   (let [crdate (str (time/now))
-        author (:username context)
-        image (extract-image-url s)]
-    (d/make-definition author crdate name s image)))
+        author (:username context)]
+    (d/make-definition author crdate name s)))
 
 (defn save-definition
   "Save definition to a database."
@@ -72,8 +63,7 @@
   (storage/store-metadata
    context
    (d/definition-metadata definition)
-   (storage/store-text context (:text definition))
-   (storage/store-graphic context (:graphic definition))))
+   (storage/store-text context (:text definition))))
 
 (defn add-definition
   "Top-level function."
@@ -99,7 +89,7 @@
 ;;;-----------------------------------------------------------------------------
 ;;; testing
 ;;;-----------------------------------------------------------------------------
-(def test-markdown
+(def test-text
   "
 ## Test definition
 
@@ -117,8 +107,7 @@
   (d/make-definition "whythat"
                      "2015.11.03"
                      "Test"
-                     test-markdown
-                     "graphic"))
+                     test-text))
 
 (defn test-run [conffile]
   (let [conf (load-config conffile)
