@@ -52,7 +52,7 @@
 
 (defn create-definition
   "Create definition from character string entered by user, handle resources."
-  [name s context]
+  [context name s]
   (let [crdate (str (time/now))
         author (:username context)]
     (d/make-definition author crdate name s)))
@@ -67,13 +67,14 @@
 
 (defn add-definition
   "Top-level function."
-  [name str context]
-  (save-definition context (create-definition name str context)))
+  [context name s]
+  (save-definition context (create-definition context name s)))
 
 (defn search-definitions-by-name
   "Return all definitions from a system"
   [context name]
-  (storage/search-definitions-by-name context name))
+  (apply str (map #(select-keys % [:name :text])
+                  (storage/search-definitions-by-name context name))))
 
 (defn show-definition
   "Transform definition to html."
