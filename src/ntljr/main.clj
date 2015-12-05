@@ -1,13 +1,15 @@
 (ns ntljr.main
-  (:require [ntljr.core :as ntljr]
+  (:require [ntljr.core :as core]
             [ntljr.web :as web]
             [ring.adapter.jetty :as ring]))
 
+(def ntljr (web/ntljrapp (core/initialize "resources/config.clj")))
+
 (defn ntljr-start [config-file]
-  (let [kernel (ntljr/initialize config-file) ;; rather loud name
-        ntljrweb (web/initialize kernel)] ;; TODO: these are temporary
-    (ring/run-jetty ntljrweb {:port 3000})))
+  (let [context (core/initialize config-file)
+        app (web/ntljrapp context)]
+    (ring/run-jetty app {:port 3000})))
 
 (defn -main []
-  (ntljr-start "resources/static/ntljrrc.clj"))
+  (ntljr-start "resources/config.clj"))
 
