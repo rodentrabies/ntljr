@@ -1,6 +1,4 @@
-{;; core
- :defsize 200 
- ;; storage
+{:defsize 200 
  :dbhost "localhost" 
  :dbport 27017
  :dbuser "ntljr"

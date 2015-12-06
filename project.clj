@@ -8,8 +8,10 @@
                  [markdown-clj "0.9.78"]
                  [com.novemberain/monger "3.0.1"]
                  [com.cemerick/friend "0.2.1"]
+                 [com.stuartsierra/component "0.3.1"]
                  [clj-time "0.11.0"]
                  [compojure "1.4.0"]
+                 [hiccup-bootstrap "0.1.2"]
                  [hiccup "1.0.5"]
                  [ring "1.4.0"]]
   :main ntljr.main

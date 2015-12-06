@@ -1,12 +1,12 @@
 (ns ntljr.web
-  (:require [compojure.core :refer [routes GET POST ANY]]
+  (:require [compojure.core :refer [defroutes routes GET POST ANY]]
             [compojure.route :as route]
             [compojure.handler :as handler]
             [ring.util.response :as resp]
             [ring.middleware.params :as params]
             [clojure.java.io :as io])
   (:require [ntljr.core :as core]
-            [ntljr.layout :as layout]))
+            [ntljr.views :as layout]))
 
 (defn home-get-response []
   {:status 200
@@ -18,8 +18,8 @@
    :headers {"Content-Type" "text/html"}
    :body (layout/add-template)})
 
-(defn add-post-response [context name text]
-  (core/add-definition context name text)
+(defn add-post-response [context name text image]
+  (core/add-definition context name text image)
   (str "<body><h1>Definition added</h1><hr></hr>" (class name ) "<br>" (class text) "</body>"))
 
 (defn search-get-response []
@@ -44,11 +44,12 @@
 (defn ntljr-routes [context]
   (routes (GET  "/"       [] (home-get-response))
           (GET  "/add"    [] (add-get-response))
-          (POST "/add"    [name text] (add-post-response context name text))
+          (POST "/add"    [name text image] (add-post-response context name text image))
           (GET  "/search" [] (search-get-response))
           (POST "/search" [name] (search-post-response context name))
           (GET  "/help"   [] (help-get-response))
-          (ANY  "*"       [] )))
+          (ANY  "*"       [] )
+          (route/resources "/")))
 
 (defn ntljrapp
   "Composes application from its parts."

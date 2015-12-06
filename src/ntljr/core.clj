@@ -52,10 +52,10 @@
 
 (defn create-definition
   "Create definition from character string entered by user, handle resources."
-  [context name s]
+  [context name s image]
   (let [crdate (str (time/now))
         author (:username context)]
-    (d/make-definition author crdate name s)))
+    (d/make-definition author crdate name s image)))
 
 (defn save-definition
   "Save definition to a database."
@@ -63,59 +63,28 @@
   (storage/store-metadata
    context
    (d/definition-metadata definition)
-   (storage/store-text context (:text definition))))
+   (storage/store-text context (:text definition))
+   (storage/store-image context (:image definition))))
 
 (defn add-definition
   "Top-level function."
-  [context name s]
-  (save-definition context (create-definition context name s)))
+  [context name s image]
+  (save-definition context (create-definition context name s image)))
+;;;-----------------------------------------------------------------------------
 
+
+;;;-----------------------------------------------------------------------------
+;;; searching
+;;;-----------------------------------------------------------------------------
 (defn search-definitions-by-name
   "Return all definitions from a system"
   [context name]
-  (apply str (map #(select-keys % [:name :text])
+  (apply str (map #(select-keys % [:name :text :image])
                   (storage/search-definitions-by-name context name))))
-
-(defn show-definition
-  "Transform definition to html."
-  [definition]
-  (md/md-to-html-string (:text definition)
-                        :reference-links? true))
-
-
-
-
-
-
 ;;;-----------------------------------------------------------------------------
-;;; testing
-;;;-----------------------------------------------------------------------------
-(def test-text
-  "
-## Test definition
 
-- Point 1
-- Point 2
-
-
-![Alt text](http://25.io/mou/img/1.png \"Title\")
-
-")
-
-
-
-(def test-definition
-  (d/make-definition "whythat"
-                     "2015.11.03"
-                     "Test"
-                     test-text))
-
-(defn test-run [conffile]
-  (let [conf (load-config conffile)
-        dbcontext (storage/initialize-storage conf)]
-    (save-definition dbcontext test-definition)
-    (search-definitions-by-name dbcontext "some name")))
-
-(defn show-test-definition []
-  (show-definition test-definition))
-;;;-----------------------------------------------------------------------------
+;; (defn show-definition
+;;   "Transform definition to html."
+;;   [definition]
+;;   (md/md-to-html-string (:text definition)
+;;                         :reference-links? true))

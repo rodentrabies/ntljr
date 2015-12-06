@@ -9,11 +9,12 @@
 
 (def Definition
   "A schema for a definition data structure."
-  {:rating scm/Int ;; integral value that shows popularity of the definition
-   :author scm/Str ;; username of the person who wrote it
-   :crdate scm/Str ;; date of creation
-   :name scm/Str   ;; notion that is being defined
-   :text scm/Str}) ;; markdown-formated payload
+  {:rating scm/Int  ;; integral value that shows popularity of the definition
+   :author scm/Str  ;; username of the person who wrote it
+   :crdate scm/Str  ;; date of creation
+   :name scm/Str    ;; notion that is being defined
+   :text scm/Str    ;; markdown-formated payload
+   :image scm/Str}) ;; illustration
 
 (defn validate-definition
   "Validation logic to check if definition is consistent."
@@ -23,9 +24,9 @@
 (defn make-definition
   "Constructor for a definition object. Definition is represented
    as a simple map to make system more data-centric."
-  [author crdate name text]
+  [author date name text image]
   (validate-definition
-   {:rating 0 :author author :crdate crdate :name name :text text}))
+   {:rating 0 :author author :crdate date :name name :text text :image image}))
 
 (defn definition-metadata [definition]
   (select-keys definition [:rating :author :crdate :name]))

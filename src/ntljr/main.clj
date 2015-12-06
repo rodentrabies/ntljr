@@ -3,7 +3,7 @@
             [ntljr.web :as web]
             [ring.adapter.jetty :as ring]))
 
-(def ntljr (web/ntljrapp (core/initialize "resources/config.clj")))
+(def ntljr (web/ntljrapp (core/initialize "resources/config.edn")))
 
 (defn ntljr-start [config-file]
   (let [context (core/initialize config-file)
@@ -11,5 +11,5 @@
     (ring/run-jetty app {:port 3000})))
 
 (defn -main []
-  (ntljr-start "resources/config.clj"))
+  (ntljr-start "resources/config.edn"))
 
