@@ -20,7 +20,9 @@
 
 (defn add-post-response [context name text image]
   (core/add-definition context name text image)
-  (str "<body><h1>Definition added</h1><hr></hr>" (class name ) "<br>" (class text) "</body>"))
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body (layout/add-response-template name)})
 
 (defn search-get-response []
   {:status 200
@@ -31,7 +33,7 @@
   (let [results (core/search-definitions-by-name context name)]
     {:status 200
      :header {"Content-Type" "text/html"}
-     :body (layout/search-results-template results)}))
+     :body (layout/search-template :results results)}))
 
 (defn help-get-response []
   {:status 200

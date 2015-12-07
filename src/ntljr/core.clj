@@ -6,6 +6,7 @@
 
 (ns ntljr.core
   (:require [clojure.pprint :as pp]
+            [clojure.string :as string]
             [schema.core :as scm]
             [clj-time.core :as time]
             [markdown.core :as md]
@@ -55,7 +56,7 @@
   [context name s image]
   (let [crdate (str (time/now))
         author (:username context)]
-    (d/make-definition author crdate name s image)))
+    (d/make-definition author crdate (string/trim name) s image)))
 
 (defn save-definition
   "Save definition to a database."
@@ -79,8 +80,8 @@
 (defn search-definitions-by-name
   "Return all definitions from a system"
   [context name]
-  (apply str (map #(select-keys % [:name :text :image])
-                  (storage/search-definitions-by-name context name))))
+  (map #(select-keys % [:name :text :image])
+       (storage/search-definitions-by-name context (string/trim name))))
 ;;;-----------------------------------------------------------------------------
 
 ;; (defn show-definition
