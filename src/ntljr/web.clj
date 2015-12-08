@@ -22,7 +22,7 @@
   (core/add-definition context name text image)
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :body (layout/add-response-template name)})
+   :body (layout/add-template :name name)})
 
 (defn search-get-response []
   {:status 200

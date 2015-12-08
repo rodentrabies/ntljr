@@ -1,7 +1,8 @@
 (ns ntljr.storage
   (:import org.bson.types.ObjectId)
   (:require [monger.core :as mg]
-            [monger.collection :as mcoll])
+            [monger.collection :as mcoll]
+            [monger.operators :refer :all])
   
   (:require [ntljr.definition :as df]))
 
@@ -57,7 +58,10 @@
 (defn search-definitions-by-name
   "Basic searching functionality."
   [context name]
-  (let [mlist (mcoll/find-maps (:db context) metadata-collection {:name name})]
+  (let [mlist
+        (mcoll/find-maps
+         (:db context) metadata-collection
+         {:name {$regex (str "^" name "$") $options "i"}})]
     (map (fn [x]
            (let [{:keys [_textID _imageID]} x]
              (assoc (dissoc x :_textID :_imageID)

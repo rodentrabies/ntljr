@@ -11,5 +11,5 @@
     (ring/run-jetty app {:port 3000})))
 
 (defn -main []
-  (ntljr-start "resources/config.edn"))
+  (ring/run-jetty #'ntljr {:port 3000 :join? false}))
 
