@@ -25,7 +25,7 @@
     there is nothing more boring and useless as redundancy of information.
     The strive for conciseness has always been the main source of inspiration for mathematicians
     of all ages, and as mathematics are what really drives everything in the world of information,
-    here we are, children of the Internet who continues to seek for conciseness,
+    here we are, children of the Internet who continue to seek conciseness,
     briefness and preciseness of the information we consume."])
 
 (def ^:const home-p2
@@ -54,7 +54,7 @@
       [:nav
        [:div {:class "nav-wrapper indigo lighten-1"}
         (elem/link-to {:class "brand-logo"} "/"
-                      [:img {:src "images/lg.png" :style "width:350px; height:85px;"}])
+                      [:img {:src "images/logo.png" :style "width:350px; height:85px;"}])
         [:ul {:class "right hide-on-med-and-down"}
          [:li (form/form-to
                [:post "/search"]
@@ -71,22 +71,40 @@
          [:li (elem/link-to "#" "LOGIN")]
          [:li (elem/link-to "#" "SIGNUP")]]]]]]
     [:main contents]
-    [:div {:class "fixed-action-btn"}
+    [:div {:class "fixed-action-btn horizontal"}
      [:a {:class "btn-floating btn-large waves-effect waves-light teal"
-          :style "bottom: 45px; right: 24px;"
-          :href "/add"}
-      [:i {:class "material-icons"} "add"]]]
-    [:footer {:class "page-footer indigo lighten-1" :height 3}
+          :style "bottom: 45px; right: 24px;"}
+      [:i {:class "material-icons"} "mode_edit"]]
+     [:ul
+      [:li [:a {:class "btn-floating teal" :href "/add"}
+                [:i {:class "material-icons"} "add"]]]
+      [:li [:a {:class "btn-floating teal" :href "/search"}
+                [:i {:class "material-icons"} "search"]]]
+      [:li [:a {:class "btn-floating teal" :href "/help"}
+                [:i {:class "material-icons"} "info"]]]]]
+    [:footer {:class "page-footer indigo lighten-1"}
+     ;; [:div {:class "container"}
 
-     [:div {:class "container"}
-      [:div {:class "row"}
-       [:div {:class "col s12"}
-        [:h5 {:class "white-text"} "NTL;JR"]
-        [:p {:class "grey-text text-lighten-4"}
-         "Define, learn, compete..."]]]]
+     ;;  ;; [:div {:class "row"}
+     ;;  ;;  [:div {:class "col s12"}
+     ;;  ;;   [:h5 {:class "white-text"} "NTL;JR"]
+     ;;  ;;   [:p {:class "grey-text text-lighten-4"}
+     ;;  ;;    "Not too long; just read."]]]
+     ;;  ]
      [:div {:class "footer-copyright indigo"}
       [:div {:class "container"}
-       "© 2034 whythat"]]]]))
+       "© 2034 whythat"]]
+     ]]))
+
+(defn make-card [definition]
+  [:div {:class "row"}
+   [:div {:class "card blue-grey darken-1"}
+    [:div {:class "card-content white-text"}
+     [:span {:class "card-title"} (:name definition)]
+     [:p (:text definition)]]
+    [:div {:class "card-action"}
+     [:a {:href "#"}
+      [:i {:class "material-icons"} "thumb_up"] (:rating definition)]]]])
 
 (defn home-template []
   (wrap-bootstrap
@@ -97,7 +115,7 @@
      home-p1
      home-p2]]))
 
-(defn add-template [& {:keys [name] :or nil}]
+(defn add-template [& {:keys [definition] :or {definition :empty}}]
   (wrap-bootstrap
    "Define | NTLJR"
    (form/form-to
@@ -121,27 +139,22 @@
           (form/label {:for "def_textarea"} "def_text" "Text")]]
         (form/submit-button {:class "btn waves-effect waves-light"} "Save")]
        [:div {:class "col s6"}
-        (when name
-          [:div {:class "card green darken-1"}
-           [:div {:class "card-content white-text"}
-            [:span {:class "card-title"} (str "You just defined " name)]]])]]]])))
+        (case definition
+          nil "Bad definition specification"
+          :empty ""
+          (make-card definition))]]]])))
 
-(defn add-response-template [name]
-  (wrap-bootstrap
-   "Define | NTLJR"
-   [:div {:class "container"}
-    [:div {:class "row"}
-     [:div {:class "col s12 m6"}
-      ]]]))
+;; (defn add-response-template [name]
+;;   (wrap-bootstrap
+;;    "Define | NTLJR"
+;;    [:div {:class "container"}
+;;     [:div {:class "row"}
+;;      [:div {:class "col s12 m6"}
+;;       ]]]))
 
-(defn make-card [name definition image]
-  [:div {:class "row"}
-   [:div {:class "card blue-grey darken-1"}
-    [:div {:class "card-content white-text"}
-     [:span {:class "card-title"} name]
-     [:p definition]]
-    [:div {:class "card-action"}
-     [:a {:href "#"} [:i {:class "material-icons"} "thumb_up"] "377"]]]])
+
+
+
 
 (defn search-template [& {:keys [results] :or nil}]
   (wrap-bootstrap
@@ -158,7 +171,7 @@
      [:div {:class "col s6"}
       (if results
         (map (fn [res]
-               (make-card (:name res) (:text res) (:image res)))
+               (make-card res))
              results))]]]))
 
 (defn help-template []

@@ -3,9 +3,12 @@
   (:require [monger.core :as mg]
             [monger.collection :as mcoll]
             [monger.operators :refer :all])
-  
   (:require [ntljr.definition :as df]))
 
+
+;;;-----------------------------------------------------------------------------
+;;; initialization
+;;;-----------------------------------------------------------------------------
 (def database-name "ntljr") ;; name of the database to use
 (def text-collection "text") ;; collection to store markdown strings
 (def images-collection "images") ;; collection to store illustrations
@@ -17,7 +20,9 @@
   (let [sa (mg/server-address (:dbhost conf) (:dbport conf))
         conn (mg/connect sa)
         db (mg/get-db conn "ntljr")]
-    {:conn conn :db db}))
+    (assoc conf :conn conn :db db)))
+;;;-----------------------------------------------------------------------------
+
 
 ;;;-----------------------------------------------------------------------------
 ;;; store
@@ -61,7 +66,8 @@
   (let [mlist
         (mcoll/find-maps
          (:db context) metadata-collection
-         {:name {$regex (str "^" name "$") $options "i"}})]
+         {:name {$regex (str "^" name) $options "i"}})]
+    (println mlist)
     (map (fn [x]
            (let [{:keys [_textID _imageID]} x]
              (assoc (dissoc x :_textID :_imageID)

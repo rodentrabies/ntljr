@@ -6,7 +6,7 @@
 
 (ns ntljr.core
   (:require [clojure.pprint :as pp]
-            [clojure.string :as string]
+            [clojure.string :as s]
             [schema.core :as scm]
             [clj-time.core :as time]
             [markdown.core :as md]
@@ -53,10 +53,12 @@
 
 (defn create-definition
   "Create definition from character string entered by user, handle resources."
-  [context name s image]
+  [context name string image]
   (let [crdate (str (time/now))
-        author (:username context)]
-    (d/make-definition author crdate (string/trim name) s image)))
+        author (:username context)
+        text (s/trim string)]
+    (when (<= (count text) (:defsize context))
+      (d/make-definition author crdate name text image))))
 
 (defn save-definition
   "Save definition to a database."
@@ -69,8 +71,11 @@
 
 (defn add-definition
   "Top-level function."
-  [context name s image]
-  (save-definition context (create-definition context name s image)))
+  [context name string image]
+  (let [definition (create-definition context name string image)]
+    (when definition
+      (save-definition context definition)
+      definition)))
 ;;;-----------------------------------------------------------------------------
 
 
@@ -80,12 +85,16 @@
 (defn search-definitions-by-name
   "Return all definitions from a system"
   [context name]
-  (map #(select-keys % [:name :text :image])
-       (storage/search-definitions-by-name context (string/trim name))))
+  (map #(select-keys % [:_id :name :text :image :rating])
+       (storage/search-definitions-by-name context (s/trim name))))
 ;;;-----------------------------------------------------------------------------
 
-;; (defn show-definition
-;;   "Transform definition to html."
-;;   [definition]
-;;   (md/md-to-html-string (:text definition)
-;;                         :reference-links? true))
+
+;;;-----------------------------------------------------------------------------
+;;; updating rating
+;;;-----------------------------------------------------------------------------
+(defn update-definition-rating [definition]
+  (let [rating (:rating definition)]
+    (assoc definition :rating (inc rating))))
+;;;-----------------------------------------------------------------------------
+
