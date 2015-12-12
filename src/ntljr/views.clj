@@ -4,14 +4,14 @@
             [hiccup.element :as elem]
             [clojure.java.io :as io]))
 
-(def ^:const color-names
-  ["teal"])
+(def ^:const colorset
+  ["teal darken-3" "grey darken-3" "red darken-4" "blue darken-4"
+   "green darken-4" "blue-grey darken-2"])
 
+(def ^:const colorset-len (count colorset))
 
-(defn pour-file
-  "Insert contents of the static file."
-  [fname]
-  (slurp fname))
+(defn get-random-color []
+  (colorset (rand-int colorset-len)))
 
 (def ^:const home-p1
   [:p {:class "flow-text"}
@@ -38,11 +38,17 @@
     requiring to shorten formulations as much as possible to fit into the 300 characters frame.
     With that in mind, you are welcome to share what you know."])
 
-(defn wrap-bootstrap [title & contents]
+(defn unautomate
+  "turn off auto(complete|correct|capitalize) text input features"
+  [attrmap]
+  (assoc attrmap :autocomplete "off" :autocorrect "off" :autocapitalize "off"))
+
+(defn wrap-main-template [title & contents]
   (page/html5
    [:head
     [:title title]
-    [:link {:href "http://fonts.googleapis.com/icon?family=Material+Icons" :rel "stylesheet"}]
+    [:link {:href "http://fonts.googleapis.com/icon?family=Material+Icons"
+            :rel "stylesheet"}]
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
     (page/include-css "css/materialize.min.css")
     (page/include-css "css/custom.css")]
@@ -52,22 +58,30 @@
     [:header
      [:div {:class "navbar-fixed"}
       [:nav
-       [:div {:class "nav-wrapper indigo lighten-1"}
-        (elem/link-to {:class "brand-logo"} "/"
-                      [:img {:src "images/logo.png" :style "width:350px; height:85px;"}])
+       [:div {:class "nav-wrapper indigo lighten-1 hide-on-large-only"}
+        (form/form-to
+         [:post "/search"]
+         [:div {:class "input-field"}
+          [:input (unautomate {:id "lookup_mobile" :name "name"
+                               :type "search" :required true})]
+          [:label {:for "lookup_mobile"}
+           [:i {:class "material-icons"} "search"]]])]
+       [:div {:class "nav-wrapper indigo lighten-1 hide-on-med-and-down"}
+        (elem/link-to
+         {:class "brand-logo hide-on-med-and-down"} "/"
+         [:img {:src "images/logo.png" :style "width:350px; height:85px;"}])
         [:ul {:class "right hide-on-med-and-down"}
          [:li (form/form-to
                [:post "/search"]
                [:div {:class "input-field"}
-                [:input {:id "srch" :name "name" :type "search"
-                         :required true :placeholder "look up"}]
+                [:input (unautomate {:id "srch" :name "name" :type "search"
+                                     :required true :placeholder "LOOK UP"})]
                 [:label {:for "srch"}
                  [:i {:class "material-icons"} "search"]]
                 [:i {:class "material-icons"} "close"]])]
          [:li (elem/link-to "/" "HOME")]
          [:li (elem/link-to "/add" "NEW")]
-         [:li (elem/link-to "/search" "SEARCH")]
-         [:li (elem/link-to "/help" "HELP")]
+         [:li (elem/link-to "/about" "ABOUT")]
          [:li (elem/link-to "#" "LOGIN")]
          [:li (elem/link-to "#" "SIGNUP")]]]]]]
     [:main contents]
@@ -76,38 +90,30 @@
           :style "bottom: 45px; right: 24px;"}
       [:i {:class "material-icons"} "mode_edit"]]
      [:ul
+      [:li [:a {:class "btn-floating teal" :href "/"}
+                [:i {:class "material-icons"} "home"]]]
       [:li [:a {:class "btn-floating teal" :href "/add"}
                 [:i {:class "material-icons"} "add"]]]
-      [:li [:a {:class "btn-floating teal" :href "/search"}
-                [:i {:class "material-icons"} "search"]]]
-      [:li [:a {:class "btn-floating teal" :href "/help"}
+      [:li [:a {:class "btn-floating teal" :href "/about"}
                 [:i {:class "material-icons"} "info"]]]]]
-    [:footer {:class "page-footer indigo lighten-1"}
-     ;; [:div {:class "container"}
-
-     ;;  ;; [:div {:class "row"}
-     ;;  ;;  [:div {:class "col s12"}
-     ;;  ;;   [:h5 {:class "white-text"} "NTL;JR"]
-     ;;  ;;   [:p {:class "grey-text text-lighten-4"}
-     ;;  ;;    "Not too long; just read."]]]
-     ;;  ]
-     [:div {:class "footer-copyright indigo"}
-      [:div {:class "container"}
-       "© 2034 whythat"]]
-     ]]))
+    [:div {:class "footer-copyright indigo"}
+     [:div {:class "container"}
+      [:p {:class "white-text"}  "NTL;JR © 2034 whythat"]]]]))
 
 (defn make-card [definition]
-  [:div {:class "row"}
-   [:div {:class "card blue-grey darken-1"}
-    [:div {:class "card-content white-text"}
-     [:span {:class "card-title"} (:name definition)]
-     [:p (:text definition)]]
-    [:div {:class "card-action"}
-     [:a {:href "#"}
-      [:i {:class "material-icons"} "thumb_up"] (:rating definition)]]]])
+  (if definition
+    [:div {:class "row"}
+     [:div {:class (str "card " (get-random-color))}
+      [:div {:class "card-content white-text"}
+       [:span {:class "card-title"} (:name definition)]
+       [:p (:text definition)]]
+      [:div {:class "card-action"}
+       [:a {:href "#"}
+        [:i {:class "material-icons"} "thumb_up"] (:rating definition)]]]]
+    ""))
 
 (defn home-template []
-  (wrap-bootstrap
+  (wrap-main-template
    "Home | NTLJR"
    [:div {:class "container"}
     [:h2 {:class "header"} "Welcome to" [:b " NTL;JR "]]
@@ -116,67 +122,67 @@
      home-p2]]))
 
 (defn add-template [& {:keys [definition] :or {definition :empty}}]
-  (wrap-bootstrap
+  (wrap-main-template
    "Define | NTLJR"
    (form/form-to
     [:post "/add"]
     [:div {:class "container"}
      [:h2 {:class "header"} "Define"]
-     [:div {:class "card-panel teal lighten-5"}
-      [:div {:class "row"}
-       [:div {:class "col s6"}
+     [:div {:class "row"}
+      [:div {:class "col s6"}
+       [:div {:class "card-panel teal lighten-5"}
         [:div {:class "row"}
          [:div {:class "input-field"}
-          (form/text-field {:id "def_name_field"} "name")
+          (form/text-field (unautomate {:id "def_name_field"}) "name")
           (form/label {:for "def_name_field"} "def_name" "Name")]]
         [:div {:class "row"}
          [:div {:class "input-field"}
-          (form/text-field {:id "def_image_field"} "image")
+          (form/text-field (unautomate {:id "def_image_field"}) "image")
           (form/label {:for "def_image_field"} "def_image" "Illustrate")]]
         [:div {:class "row"}
          [:div {:class "input-field"}
-          (form/text-area {:id "def_textarea" :class "materialize-textarea"} "text")
+          (form/text-area
+           (unautomate {:id "def_textarea" :class "materialize-textarea"}) "text")
           (form/label {:for "def_textarea"} "def_text" "Text")]]
-        (form/submit-button {:class "btn waves-effect waves-light"} "Save")]
-       [:div {:class "col s6"}
+        (form/submit-button {:class "btn waves-effect waves-light"} "Save")]]
+      [:div {:class "col s6"}
+       [:div {:class "row"}
         (case definition
           nil "Bad definition specification"
           :empty ""
           (make-card definition))]]]])))
 
-;; (defn add-response-template [name]
-;;   (wrap-bootstrap
-;;    "Define | NTLJR"
-;;    [:div {:class "container"}
-;;     [:div {:class "row"}
-;;      [:div {:class "col s12 m6"}
-;;       ]]]))
-
-
-
-
-
 (defn search-template [& {:keys [results] :or nil}]
-  (wrap-bootstrap
+  (wrap-main-template
    "Search | NTLJR"
    [:div {:class "container"}
     [:h2 {:class "header text-teal darken-1"} "Search"]
-    [:div {:class "row"}
-     [:div {:class "input-field col s6"}
-      (form/form-to
-       [:post "/search"]
-       (form/text-field {:id "def_name_field"} "name")
-       (form/label {:for "def_name_field"} "def_name" "Name")
-       (form/submit-button {:class "btn waves-effect waves-light"} "search"))] 
-     [:div {:class "col s6"}
-      (if results
-        (map (fn [res]
-               (make-card res))
-             results))]]]))
+    (if results
+      (map (fn [[r1 r2]]
+             [:div {:class "row"} (make-card r1) (make-card r2)])
+           (partition 2 2 "" results)))
+    ;; [:div {:class "row"}
+    ;;  [:div {:class "input-field col s6"}
+    ;;   (form/form-to
+    ;;    [:post "/search"]
+    ;;    (form/text-field {:id "def_name_field"} "name")
+    ;;    (form/label {:for "def_name_field"} "def_name" "Name")
+    ;;    (form/submit-button {:class "btn waves-effect waves-light"} "search"))] 
+    ;;  [:div {:class "col s6"}
+    ;;   (if results
+    ;;     (map (fn [res]
+    ;;            (make-card res))
+    ;;          results))]]
+    ]))
 
-(defn help-template []
-  (wrap-bootstrap
-   "Help | NTLJR"
+(defn about-template []
+  (wrap-main-template
+   "About | NTLJR"
    [:div {:class "container"}
     [:h2 "Help"]]))
 
+(defn not-found-template []
+  (wrap-main-template
+   "Not found | NTLJR"
+   [:div {:class "container"}
+    [:h2 "Oops... 404, dear."]]))

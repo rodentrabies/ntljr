@@ -8,41 +8,49 @@
   (:require [ntljr.core :as core]
             [ntljr.views :as layout]))
 
+(defn wrap-encoding [resp]
+  (response/charset resp "UTF-8"))
+
 (defn home-get-response []
-  {:status 200
-   :header {"Content-Type" "text/html"}
-   :body (layout/home-template)})
+  (wrap-encoding
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (layout/home-template)}))
 
 (defn add-get-response []
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (layout/add-template)})
+  (wrap-encoding {:status 200
+                  :headers {"Content-Type" "text/html"}
+                  :body (layout/add-template)}))
 
 (defn add-post-response [context name text image]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (layout/add-template
-          :definition (core/add-definition context name text image))})
+  (wrap-encoding
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (layout/add-template
+           :definition (core/add-definition context name text image))}))
 
 (defn search-get-response []
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (layout/search-template)})
+  (wrap-encoding
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (layout/search-template)}))
 
 (defn search-post-response [context name]
   (let [results (core/search-definitions-by-name context name)]
-    {:status 200
-     :header {"Content-Type" "text/html"}
-     :body (layout/search-template
-            :results results)}))
+    (wrap-encoding
+     {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (layout/search-template
+             :results results)})))
 
-(defn help-get-response []
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (layout/help-template)})
+(defn about-get-response []
+  (wrap-encoding
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (layout/about-template)}))
 
 (defn not-found-response []
-  (route/not-found (slurp (io/resource "404.html"))))
+  (route/not-found (layout/not-found-template)))
 
 (defn ntljr-routes [context]
   (routes (GET  "/" [] (home-get-response))
@@ -50,8 +58,8 @@
           (POST "/add" [name text image] (add-post-response context name text image))
           (GET  "/search" [] (search-get-response))
           (POST "/search" [name] (search-post-response context name))
-          (GET  "/help" [] (help-get-response))
-          (ANY  "*" [])
+          (GET  "/about" [] (about-get-response))
+          (ANY  "*" [] (not-found-response))
           (route/resources "/")))
 
 (defn ntljrapp
