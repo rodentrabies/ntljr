@@ -5,8 +5,10 @@
             [clojure.java.io :as io]))
 
 (def ^:const colorset
-  ["teal darken-3" "grey darken-3" "red darken-4" "blue darken-4"
-   "green darken-4" "blue-grey darken-2"])
+  (into [] (mapcat (fn [x] (map #(str x " darken-" %) [1 2 3 4]))
+                   ["red" "pink" "purple" "deep-purple" "indigo" "blue"
+                    "light-blue" "cyan" "teal" "green" "light-green" "lime"
+                    "orange" "deep-orange" "brown" "grey" "blue-grey"])))
 
 (def ^:const colorset-len (count colorset))
 
@@ -104,6 +106,7 @@
   (if definition
     [:div {:class "row"}
      [:div {:class (str "card " (get-random-color))}
+      ;; {:class "card" :style {:color (str "#00" (hash (:text definition)))}}
       [:div {:class "card-content white-text"}
        [:span {:class "card-title"} (:name definition)]
        [:p (:text definition)]]

@@ -66,7 +66,7 @@
   (let [mlist
         (mcoll/find-maps
          (:db context) metadata-collection
-         {:name {$regex (str "^" name) $options "i"}})]
+         {:name {$regex name $options "i"}})]
     (println mlist)
     (map (fn [x]
            (let [{:keys [_textID _imageID]} x]

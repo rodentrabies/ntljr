@@ -59,7 +59,7 @@
           (GET  "/search" [] (search-get-response))
           (POST "/search" [name] (search-post-response context name))
           (GET  "/about" [] (about-get-response))
-          (ANY  "*" [] (not-found-response))
+          ;; (ANY  "*" [] (not-found-response))
           (route/resources "/")))
 
 (defn ntljrapp

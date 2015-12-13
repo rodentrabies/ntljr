@@ -1,4 +1,4 @@
-{:defsize 300 
+{:defsize 500
  :dbhost "localhost" 
  :dbport 27017
  :dbuser "ntljr"
