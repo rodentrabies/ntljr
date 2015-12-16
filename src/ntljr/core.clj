@@ -85,16 +85,17 @@
 (defn search-definitions-by-name
   "Return all definitions from a system"
   [context name]
-  (map #(select-keys % [:_id :name :text :image :rating])
-       (storage/search-definitions-by-name context (s/trim name))))
+  (sort-by
+   :rating >
+   (map #(select-keys % [:_id :name :text :image :rating :author :crdate])
+        (storage/search-definitions-by-name context (s/trim name)))))
 ;;;-----------------------------------------------------------------------------
 
 
 ;;;-----------------------------------------------------------------------------
 ;;; updating rating
 ;;;-----------------------------------------------------------------------------
-(defn update-definition-rating [definition]
-  (let [rating (:rating definition)]
-    (assoc definition :rating (inc rating))))
+(defn rate-definition [context id]
+  (storage/change-keyval context id :rating inc))
 ;;;-----------------------------------------------------------------------------
 

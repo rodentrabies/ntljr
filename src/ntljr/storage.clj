@@ -60,6 +60,17 @@
   (:image (mcoll/find-one-as-map
            (:db context) images-collection {:_id (ObjectId. imid)})))
 
+(defn change-keyval
+  "Update key 'k' of database entry with id 'id' with function 'f'."
+  [context id k f]
+  (let [oid (ObjectId. id)
+        d (mcoll/find-one-as-map (:db context) metadata-collection {:_id oid})]
+    (mcoll/update-by-id
+     (:db context) metadata-collection oid (assoc d k (f (k d))))))
+
+(defn search-definition-by-id [context id]
+  (mcoll/find-one-as-map (:db context) metadata-collection {:_id id}))
+
 (defn search-definitions-by-name
   "Basic searching functionality."
   [context name]
@@ -67,7 +78,6 @@
         (mcoll/find-maps
          (:db context) metadata-collection
          {:name {$regex name $options "i"}})]
-    (println mlist)
     (map (fn [x]
            (let [{:keys [_textID _imageID]} x]
              (assoc (dissoc x :_textID :_imageID)

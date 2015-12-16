@@ -6,14 +6,14 @@
 
 (def ^:const colorset
   (into [] (mapcat (fn [x] (map #(str x " darken-" %) [1 2 3 4]))
-                   ["red" "pink" "purple" "deep-purple" "indigo" "blue"
-                    "light-blue" "cyan" "teal" "green" "light-green" "lime"
-                    "orange" "deep-orange" "brown" "grey" "blue-grey"])))
+                   ["red" "purple" "deep-purple" "indigo" "blue" "light-blue"
+                    "cyan" "teal" "green" "light-green" "deep-orange" "brown"
+                    "grey" "blue-grey"])))
 
 (def ^:const colorset-len (count colorset))
 
-(defn get-random-color []
-  (colorset (rand-int colorset-len)))
+(defn get-random-color [text]
+  (colorset (mod (hash text) colorset-len)))
 
 (def ^:const home-p1
   [:p {:class "flow-text"}
@@ -23,22 +23,24 @@
    [:b " \"tl;dr\" "]
    ". This so called"
    [:i " meme "]
-   "is one of the most notable proofs, that from the perspective of the Internet generation,
-    there is nothing more boring and useless as redundancy of information.
-    The strive for conciseness has always been the main source of inspiration for mathematicians
-    of all ages, and as mathematics are what really drives everything in the world of information,
-    here we are, children of the Internet who continue to seek conciseness,
-    briefness and preciseness of the information we consume."])
+   "is one of the most notable proofs, that from the perspective of the Internet
+    generation, there is nothing more boring and useless as redundancy of
+    information. The strive for conciseness has always been the main source of
+    inspiration for mathematicians of all ages, and as mathematics are what
+    really drives everything in the world of information, here we are, children
+    of the Internet who continue to seek conciseness, briefness and preciseness
+    of the information we consume."])
 
 (def ^:const home-p2
   [:p {:class "flow-text"}
    [:b " \"ntl;jr\" "]
    "stands for the opposite:"
    [:b " \"not too long; just read\" "]
-   ". It is a system that allows users to define and illustrate notions from different
-    categories of knowledge, but imposes strong restrictions on the size of the definition,
-    requiring to shorten formulations as much as possible to fit into the 300 characters frame.
-    With that in mind, you are welcome to share what you know."])
+   ". It is a system that allows users to define and illustrate notions from
+    different categories of knowledge, but imposes strong restrictions on the
+    size of the definition, requiring to shorten formulations as much as possible
+    to fit into the 300 characters frame. With that in mind, you are welcome to
+    share what you know."])
 
 (defn unautomate
   "turn off auto(complete|correct|capitalize) text input features"
@@ -52,11 +54,11 @@
     [:link {:href "http://fonts.googleapis.com/icon?family=Material+Icons"
             :rel "stylesheet"}]
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
-    (page/include-css "css/materialize.min.css")
-    (page/include-css "css/custom.css")]
+    (page/include-css "/css/materialize.min.css")
+    (page/include-css "/css/custom.css")]
    [:body
     (page/include-js "https://code.jquery.com/jquery-2.1.1.min.js")
-    (page/include-js "js/materialize.min.js")
+    (page/include-js "/js/materialize.min.js")
     [:header
      [:div {:class "navbar-fixed"}
       [:nav
@@ -71,7 +73,7 @@
        [:div {:class "nav-wrapper indigo lighten-1 hide-on-med-and-down"}
         (elem/link-to
          {:class "brand-logo hide-on-med-and-down"} "/"
-         [:img {:src "images/logo.png" :style "width:350px; height:85px;"}])
+         [:img {:src "/images/logo.png" :style "width:350px; height:85px;"}])
         [:ul {:class "right hide-on-med-and-down"}
          [:li (form/form-to
                [:post "/search"]
@@ -100,29 +102,38 @@
                 [:i {:class "material-icons"} "info"]]]]]
     [:div {:class "footer-copyright indigo"}
      [:div {:class "container"}
-      [:p {:class "white-text"}  "NTL;JR © 2034 whythat"]]]]))
+      [:p {:class "white-text"}  "NTL;JR © 2015 whythat"]]]]))
 
-(defn make-card [definition]
+(defn make-card [definition name]
   (if definition
     [:div {:class "row"}
-     [:div {:class (str "card " (get-random-color))}
-      ;; {:class "card" :style {:color (str "#00" (hash (:text definition)))}}
+     [:div {:class (str "card " (get-random-color (:_id definition)))}
       [:div {:class "card-content white-text"}
        [:span {:class "card-title"} (:name definition)]
+       [:p {:class "white-text"}
+        (:author definition) " @ " (:crdate definition)]
+       [:hr]
        [:p (:text definition)]]
       [:div {:class "card-action"}
-       [:a {:href "#"}
-        [:i {:class "material-icons"} "thumb_up"] (:rating definition)]]]]
+       (if (not= (:rating definition) " ∞ ")
+         [:form {:action (str "/search/" name) :method "post"}
+          [:button {:type "submit" :class "btn-flat waves-effect"
+                    :name "rate" :value (:_id definition)}
+           [:i {:class "large material-icons white-text"} "thumb_up"]
+           [:b {:class "white-text"} (str " " (:rating definition))]]]
+         [:div
+          [:i {:class "material-icons white-text"} "thumb_up"]
+          [:b {:class "white-text"} (str " " (:rating definition))]])]]]
     ""))
 
 (defn home-template []
   (wrap-main-template
    "Home | NTLJR"
    [:div {:class "container"}
-    [:h2 {:class "header"} "Welcome to" [:b " NTL;JR "]]
-    [:div {:class "card-panel teal lighten-5"}
-     home-p1
-     home-p2]]))
+    [:h2 {:class "header"}
+     [:b {:class "teal-text"} "NTL;JR:"]
+     "  welcome"]
+    [:div {:class "card-panel teal lighten-5"} home-p1 home-p2]]))
 
 (defn add-template [& {:keys [definition] :or {definition :empty}}]
   (wrap-main-template
@@ -130,59 +141,53 @@
    (form/form-to
     [:post "/add"]
     [:div {:class "container"}
-     [:h2 {:class "header"} "Define"]
+     [:h2 {:class "header"}
+      [:b {:class "teal-text"} "NTL;JR:"]
+      "  define piece of your world"]
      [:div {:class "row"}
-      [:div {:class "col s6"}
-       [:div {:class "card-panel teal lighten-5"}
-        [:div {:class "row"}
-         [:div {:class "input-field"}
-          (form/text-field (unautomate {:id "def_name_field"}) "name")
-          (form/label {:for "def_name_field"} "def_name" "Name")]]
-        [:div {:class "row"}
-         [:div {:class "input-field"}
-          (form/text-field (unautomate {:id "def_image_field"}) "image")
-          (form/label {:for "def_image_field"} "def_image" "Illustrate")]]
-        [:div {:class "row"}
-         [:div {:class "input-field"}
-          (form/text-area
-           (unautomate {:id "def_textarea" :class "materialize-textarea"}) "text")
-          (form/label {:for "def_textarea"} "def_text" "Text")]]
-        (form/submit-button {:class "btn waves-effect waves-light"} "Save")]]
-      [:div {:class "col s6"}
+      [:div {:class "card-panel teal lighten-5"}
        [:div {:class "row"}
-        (case definition
-          nil "Bad definition specification"
-          :empty ""
-          (make-card definition))]]]])))
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "def_name_field"}) "name")
+         (form/label {:for "def_name_field"} "def_name" "Name")]]
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "def_image_field"}) "image")
+         (form/label {:for "def_image_field"} "def_image" "Illustrate")]]
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-area
+          (unautomate {:id "def_textarea" :class "materialize-textarea"}) "text")
+         (form/label {:for "def_textarea"} "def_text" "Text")]]
+       (form/submit-button {:class "btn waves-effect waves-light"} "Save")]]
+     [:div {:class "row"}
+      (case definition
+        nil "Bad definition specification"
+        :empty ""
+        [:div {:class (str "card " (get-random-color (:text definition)))}
+         [:div {:class "card-content white-text"}
+          [:span {:class "card-title"} (:name definition)]
+          [:p
+           "You've just defined \""
+           [:b (:name definition)]
+           "\". Thanks for sharing!"]]])]])))
 
-(defn search-template [& {:keys [results] :or nil}]
+(defn search-template [& {:keys [results name] :or nil}]
   (wrap-main-template
    "Search | NTLJR"
    [:div {:class "container"}
-    [:h2 {:class "header text-teal darken-1"} "Search"]
     (if results
-      (map (fn [[r1 r2]]
-             [:div {:class "row"} (make-card r1) (make-card r2)])
-           (partition 2 2 "" results)))
-    ;; [:div {:class "row"}
-    ;;  [:div {:class "input-field col s6"}
-    ;;   (form/form-to
-    ;;    [:post "/search"]
-    ;;    (form/text-field {:id "def_name_field"} "name")
-    ;;    (form/label {:for "def_name_field"} "def_name" "Name")
-    ;;    (form/submit-button {:class "btn waves-effect waves-light"} "search"))] 
-    ;;  [:div {:class "col s6"}
-    ;;   (if results
-    ;;     (map (fn [res]
-    ;;            (make-card res))
-    ;;          results))]]
-    ]))
+      (map (fn [res]
+             (make-card res name))
+           results))]))
 
 (defn about-template []
   (wrap-main-template
    "About | NTLJR"
    [:div {:class "container"}
-    [:h2 "Help"]]))
+    [:h2 {:class "header"}
+     [:b {:class "teal-text"} "NTL;JR:"]
+     "  about us - still deciding..."]]))
 
 (defn not-found-template []
   (wrap-main-template

@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [compojure.handler :as handler]
             [ring.util.response :as response]
+            [ring.util.codec :as codec]
             [ring.middleware.params :as params]
             [clojure.java.io :as io])
   (:require [ntljr.core :as core]
@@ -35,13 +36,26 @@
     :headers {"Content-Type" "text/html"}
     :body (layout/search-template)}))
 
-(defn search-post-response [context name]
-  (let [results (core/search-definitions-by-name context name)]
+(defn search-post-response [name]
+  (response/redirect-after-post
+   (str "/search/" (codec/percent-encode name))))
+
+(defn result-get-response [context name]
+  (let [ename (codec/percent-encode name)
+        results (core/search-definitions-by-name context name)]
     (wrap-encoding
      {:status 200
       :headers {"Content-Type" "text/html"}
-      :body (layout/search-template
-             :results results)})))
+      :body (layout/search-template :results results :name ename)})))
+
+(defn result-post-response [context name id]
+  (core/rate-definition context id)
+  (let [ename (codec/percent-decode name)
+        results (core/search-definitions-by-name context ename)]
+    (wrap-encoding
+     {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (layout/search-template :results results :name ename)})))
 
 (defn about-get-response []
   (wrap-encoding
@@ -50,17 +64,19 @@
     :body (layout/about-template)}))
 
 (defn not-found-response []
-  (route/not-found (layout/not-found-template)))
+  (layout/not-found-template))
 
 (defn ntljr-routes [context]
-  (routes (GET  "/" [] (home-get-response))
-          (GET  "/add" [] (add-get-response))
-          (POST "/add" [name text image] (add-post-response context name text image))
-          (GET  "/search" [] (search-get-response))
-          (POST "/search" [name] (search-post-response context name))
-          (GET  "/about" [] (about-get-response))
-          ;; (ANY  "*" [] (not-found-response))
-          (route/resources "/")))
+  (routes
+   (GET  "/" [] (home-get-response))
+   (GET  "/add" [] (add-get-response))
+   (POST "/add" [name text image] (add-post-response context name text image))
+   (POST "/search" [name] (search-post-response name))
+   (GET  "/search/:name" [name] (result-get-response context name))
+   (POST "/search/:name" [name rate] (result-post-response context name rate))
+   (GET  "/about" [] (about-get-response))
+   (route/resources "/")
+   (route/not-found (not-found-response))))
 
 (defn ntljrapp
   "Composes application from its parts."

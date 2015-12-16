@@ -1,0 +1,31 @@
+Mathematics
+Mathematics (from Greek μάθημα máthēma, “knowledge, study, learning”) is the study of topics such as quantity (numbers), structure, space, and change. There is a range of views among mathematicians and philosophers as to the exact scope and definition of mathematics.
+
+UNIX
+Unix (trademarked as UNIX) is a family of multitasking, multiuser computer operating systems that derive from the original AT&T Unix, developed in the 1970s at the Bell Labs research center by Ken Thompson, Dennis Ritchie, and others.
+
+UNIX-like
+A Unix-like (sometimes UN*X or *nix) operating system is one that behaves in a manner similar to a Unix system, while not necessarily conforming to or being certified to any version of the Single UNIX Specification.
+
+POSIX
+POSIX (/ˈpɒzɪks/ POZ-iks), an acronym for Portable Operating System Interface, is a family of standards specified by the IEEE Computer Society for maintaining compatibility between operating systems.
+
+Unix philosophy
+The Unix philosophy, originated by Ken Thompson, is a set of cultural norms and philosophical approaches to developing small yet capable software based on the experience of leading developers of the Unix operating system.
+
+tl;dr
+tl;dr is an abbreviation for "too long; didn't read", famous phrase used among Internet folk to express their concerns about the redundancy of the given article (blog post, comment etc).
+
+Matrix
+In mathematics, a matrix (plural matrices) is a rectangular array of numbers, symbols, or expressions, arranged in rows and columns — that is interpreted and manipulated in certain prescribed ways.
+https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Matrix.svg/247px-Matrix.svg.png
+The Matrix
+The Matrix is a 1999 American–Australian neo-noir science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss, Hugo Weaving, and Joe Pantoliano. It depicts a dystopian future in which reality as perceived by most humans is actually a simulated reality called "the Matrix", created by sentient machines to subdue the human population, while their bodies' heat and electrical activity are used as an energy source.
+https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg
+Clojure
+Clojure (pronounced /ˈkloʊʒɜr/, like "closure") is a dialect of the Lisp programming language created by Rich Hickey. Clojure is a general-purpose programming language with an emphasis on functional programming. It runs on the Java Virtual Machine, Common Language Runtime, and JavaScript engines. Like other Lisps, Clojure treats code as data and has a macro system. The current development process is community-driven, overseen by Rich Hickey as its BDFL.
+
+BDFL
+Benevolent Dictator For Life (BDFL) is a title given to a small number of open-source software development leaders, typically project founders who retain the final say in disputes or arguments within the community. The phrase originated in 1995 with reference to Guido van Rossum, creator of the Python programming language.
+
+/end
