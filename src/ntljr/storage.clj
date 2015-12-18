@@ -2,14 +2,14 @@
   (:import org.bson.types.ObjectId)
   (:require [monger.core :as mg]
             [monger.collection :as mcoll]
-            [monger.operators :refer :all])
+            [monger.operators :refer :all]
+            [clojure.set :as clj-set])
   (:require [ntljr.definition :as df]))
-
 
 ;;;-----------------------------------------------------------------------------
 ;;; initialization
 ;;;-----------------------------------------------------------------------------
-(def database-name "ntljr") ;; name of the database to use
+(def user-collection "users") ;; collection to store user credentials
 (def text-collection "text") ;; collection to store markdown strings
 (def images-collection "images") ;; collection to store illustrations
 (def metadata-collection "metadata") ;; collection to store metadata
@@ -19,7 +19,7 @@
   [conf]
   (let [sa (mg/server-address (:dbhost conf) (:dbport conf))
         conn (mg/connect sa)
-        db (mg/get-db conn "ntljr")]
+        db (mg/get-db conn (:dbname conf))]
     (assoc conf :conn conn :db db)))
 ;;;-----------------------------------------------------------------------------
 
@@ -44,6 +44,12 @@
               (:db context)
               metadata-collection
               (assoc meta :_textID tid :_imageID imid)))))
+
+(defn store-user-creds
+  "Store user credentials."
+  [context username phash]
+  (mcoll/insert
+   (:db context) user-collection {:_id username :pwd phash}))
 ;;;-----------------------------------------------------------------------------
 
 
@@ -59,6 +65,10 @@
 (defn search-image [context imid]
   (:image (mcoll/find-one-as-map
            (:db context) images-collection {:_id (ObjectId. imid)})))
+
+(defn get-user-creds [context uname]
+  (let [umap (mcoll/find-one-as-map (:db context) user-collection {:_id uname})]
+    (and umap (clj-set/rename-keys umap {:_id :username :pwd :password}))))
 
 (defn change-keyval
   "Update key 'k' of database entry with id 'id' with function 'f'."

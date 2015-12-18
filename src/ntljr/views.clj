@@ -47,7 +47,7 @@
   [attrmap]
   (assoc attrmap :autocomplete "off" :autocorrect "off" :autocapitalize "off"))
 
-(defn wrap-main-template [title & contents]
+(defn wrap-main-template [user title & contents]
   (page/html5
    [:head
     [:title title]
@@ -74,35 +74,44 @@
         (elem/link-to
          {:class "brand-logo hide-on-med-and-down"} "/"
          [:img {:src "/images/logo.png" :style "width:350px; height:85px;"}])
-        [:ul {:class "right hide-on-med-and-down"}
-         [:li (form/form-to
-               [:post "/search"]
-               [:div {:class "input-field"}
-                [:input (unautomate {:id "srch" :name "name" :type "search"
-                                     :required true :placeholder "LOOK UP"})]
-                [:label {:for "srch"}
-                 [:i {:class "material-icons"} "search"]]
-                [:i {:class "material-icons"} "close"]])]
-         [:li (elem/link-to "/" "HOME")]
-         [:li (elem/link-to "/add" "NEW")]
-         [:li (elem/link-to "/about" "ABOUT")]
-         [:li (elem/link-to "#" "LOGIN")]
-         [:li (elem/link-to "#" "SIGNUP")]]]]]]
+        `[:ul {:class "right hide-on-med-and-down"}
+          ~[:li (form/form-to
+                 [:post "/search"]
+                 [:div {:class "input-field"}
+                  [:input (unautomate {:id "srch" :name "name" :type "search"
+                                       :required true :placeholder "LOOK UP"})]
+                  [:label {:for "srch"}
+                   [:i {:class "material-icons"} "search"]]
+                  [:i {:class "material-icons"} "close"]])]
+          ~[:li (elem/link-to "/" "  HOME ")]
+          ~[:li (elem/link-to "/about" " ABOUT")]
+          ~@(if user
+              [[:li (elem/link-to "/add" "  NEW ")]
+               [:li (elem/link-to "/logout" "LOGOUT")]]
+              [[:li (elem/link-to "/login" " LOGIN")]
+               [:li (elem/link-to "/signup" "SIGNUP")]])]]]]]
     [:main contents]
     [:div {:class "fixed-action-btn horizontal"}
      [:a {:class "btn-floating btn-large waves-effect waves-light teal"
           :style "bottom: 45px; right: 24px;"}
       [:i {:class "material-icons"} "mode_edit"]]
-     [:ul
-      [:li [:a {:class "btn-floating teal" :href "/"}
-                [:i {:class "material-icons"} "home"]]]
-      [:li [:a {:class "btn-floating teal" :href "/add"}
-                [:i {:class "material-icons"} "add"]]]
-      [:li [:a {:class "btn-floating teal" :href "/about"}
-                [:i {:class "material-icons"} "info"]]]]]
+     `[:ul
+       ~[:li [:a {:class "btn-floating teal" :href "/"}
+             [:i {:class "material-icons"} "home"]]]
+       ~[:li [:a {:class "btn-floating teal" :href "/about"}
+             [:i {:class "material-icons"} "info"]]]
+       ~@(if user
+           [[:li [:a {:class "btn-floating teal" :href "/add"}
+                  [:i {:class "material-icons"} "add"]]]
+            [:li [:a {:class "btn-floating teal" :href "/logout"}
+                  [:i {:class "material-icons"} "input"]]]]
+           [[:li [:a {:class "btn-floating teal" :href "/login"}
+                  [:i {:class "material-icons"} "verified_user"]]]
+            [:li [:a {:class "btn-floating teal" :href "/signup"}
+                  [:i {:class "material-icons"} "perm_identity"]]]])]]
     [:div {:class "footer-copyright indigo"}
      [:div {:class "container"}
-      [:p {:class "white-text"}  "NTL;JR © 2015 whythat"]]]]))
+      [:p {:class "white-text"} "NTL;JR © 2015 whythat"]]]]))
 
 (defn make-card [definition name]
   (if definition
@@ -126,8 +135,9 @@
           [:b {:class "white-text"} (str " " (:rating definition))]])]]]
     ""))
 
-(defn home-template []
+(defn home-template [user]
   (wrap-main-template
+   user
    "Home | NTLJR"
    [:div {:class "container"}
     [:h2 {:class "header"}
@@ -135,8 +145,9 @@
      "  welcome"]
     [:div {:class "card-panel teal lighten-5"} home-p1 home-p2]]))
 
-(defn add-template [& {:keys [definition] :or {definition :empty}}]
+(defn add-template [user & {:keys [definition] :or {definition :empty}}]
   (wrap-main-template
+   user
    "Define | NTLJR"
    (form/form-to
     [:post "/add"]
@@ -172,8 +183,9 @@
            [:b (:name definition)]
            "\". Thanks for sharing!"]]])]])))
 
-(defn search-template [& {:keys [results name] :or nil}]
+(defn search-template [user & {:keys [results name] :or nil}]
   (wrap-main-template
+   user
    "Search | NTLJR"
    [:div {:class "container"}
     (if results
@@ -181,16 +193,76 @@
              (make-card res name))
            results))]))
 
-(defn about-template []
+(defn about-template [user]
   (wrap-main-template
+   user
    "About | NTLJR"
    [:div {:class "container"}
     [:h2 {:class "header"}
      [:b {:class "teal-text"} "NTL;JR:"]
      "  about us - still deciding..."]]))
 
-(defn not-found-template []
+(defn auth-error-card [msg]
+  (when msg
+    [:div {:class "row"}
+     [:div {:class "card black"}
+      [:div {:class "card-content white-text"}
+       [:span {:class "card-title"} "Whoops!"]
+       [:p msg]]]]))
+
+(defn login-template [user err]
   (wrap-main-template
+   user
+   "Login | NTLJR"
+   (form/form-to
+    [:post "/login"]
+    [:div {:class "container"}
+     [:h2 {:class "header"}
+      [:b {:class "teal-text"} "NTL;JR:"]
+      "  login"]
+     [:div {:class "row"}
+      [:div {:class "card-panel teal lighten-5"}
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "uname_field"}) "uname")
+         (form/label {:for "uname_field"} "un" "Username")]]
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "pwd_field" :type "password"}) "pwd")
+         (form/label {:for "pwd_field"} "pw" "Password")]]
+       (form/submit-button {:class "btn waves-effect waves-light"} "Login")]]
+     (auth-error-card err)])))
+
+(defn signup-template [user err]
+  (wrap-main-template
+   user
+   "Sign Up | NTLJR"
+   (form/form-to
+    [:post "/signup"]
+    [:div {:class "container"}
+     [:h2 {:class "header"}
+      [:b {:class "teal-text"} "NTL;JR:"]
+      "  sign up"]
+     [:div {:class "row"}
+      [:div {:class "card-panel teal lighten-5"}
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "uname_field"}) "uname")
+         (form/label {:for "uname_field"} "uname_lbl" "Username")]]
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "pwd1_field" :type "password"}) "p1")
+         (form/label {:for "pwd1_field"} "pwd1" "Password")]]
+       [:div {:class "row"}
+        [:div {:class "input-field"}
+         (form/text-field (unautomate {:id "pwd2_field" :type "password"}) "p2")
+         (form/label {:for "pwd2_field"} "pwd2" "Repeat password")]]
+       (form/submit-button {:class "btn waves-effect waves-light"} "Sign Up")]]
+     (auth-error-card err)])))
+
+(defn not-found-template [user]
+  (wrap-main-template
+   user
    "Not found | NTLJR"
    [:div {:class "container"}
     [:h2 "Oops... 404, dear."]]))

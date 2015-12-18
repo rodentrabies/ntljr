@@ -3,13 +3,8 @@
             [ntljr.web :as web]
             [ring.adapter.jetty :as ring]))
 
-(def ntljr (web/ntljrapp (core/initialize "resources/config.edn")))
-
-(defn -devmain []
-  (ring/run-jetty #'ntljr {:port 3000 :join? false}))
-
 (defn ntljr-start [config-file]
-  (let [context (core/initialize config-file)
+  (let [context (atom (core/initialize config-file))
         app (web/ntljrapp context)]
     (ring/run-jetty app {:port 3000})))
 
@@ -18,3 +13,8 @@
 
 
 
+;; dev
+(def ntljr (web/ntljrapp (atom (core/initialize "resources/config.edn"))))
+
+(defn devserver []
+  (ring/run-jetty #'ntljr {:port 3000 :join? false}))

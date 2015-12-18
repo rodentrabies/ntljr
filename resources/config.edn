@@ -1,5 +1,6 @@
 {:defsize 500
- :dbhost "localhost" 
+ :dbhost "localhost"
+ :dbname "ntljr"
  :dbport 27017
  :dbuser "ntljr"
  :dbupwd "ntljr"}

@@ -27,27 +27,39 @@ definition that exceeds length limit, because rules are not for everyone.)")
 
 (defn repopulate-database
   "Fill database with information from specified file."
-  [dumpfile]
-  (let [context (core/initialize "resources/config.edn")
+  [config dumpfile]
+  (let [context (assoc (core/initialize config) :username "admin")
         data (slurp dumpfile :encoding "UTF-8")
         triples (partition 3 (clojure.string/split-lines data))]
-    (drop-db (:conn context) st/database-name)
+    (drop-db (:conn context) (:dbname context))
     (doall (map (fn [[n s i]]
                   (ntljr.core/add-definition context n s i))
                 triples))
-    (core/save-definition
+    (core/save-definition ;; a little easter egg
      context
      {:name "ntl;jr" :text ntljr-definition :author "whythat"
       :rating " ∞ " :crdate "2015.12.16" :image ""})
     (.close (:conn context))))
 
+(defn dump-database
+  "Dump information from database to a destination."
+  [config dest]
+  (let [context (assoc (core/initialize config) :username "admin")]
+    (= 0 (:out (sh "mongodump"
+                   "--host" (:dbhost context)
+                   "--port" (:dbport context)
+                   "--db" (:dbname context)
+                   "--out" dest)))))
+
+(defn load-database
+  "Load database from dump destination."
+  [config dest]
+  (let [context (assoc (core/initialize config) :username "admin")]
+    (= 0 (:out (sh "mongorestore"
+                   "--host" (:dbhost context)
+                   "--port" (:dbport context)
+                   "--db" (:dbname context)
+                   dest)))))
+
 (defn reset-database! []
-  (repopulate-database "resources/data.txt"))
-
-;; (defn dump-database
-;;   "Dump information from database to a given file."
-;;   [dumpfile]
-;;   (sh ))
-
-
-
+  (repopulate-database "resources/config.edn" "resources/data.txt"))
