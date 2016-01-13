@@ -18,6 +18,9 @@
 (defn authenticated? [context]
   (contains? context :username))
 
+(defn root-user? [context]
+  (= (:username context) "root"))
+
 (defn sign-up
   "Add new user if 'uname' is free and log in."
   [context uname password repeated]

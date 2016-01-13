@@ -9,7 +9,6 @@
             [clojure.string :as s]
             [schema.core :as scm]
             [clj-time.core :as time]
-            ;; [markdown.core :as md]
             [clojure.java.io :as io])
 
   (:require [ntljr.storage :as storage]
@@ -21,12 +20,14 @@
 ;;; Configuration file loading
 ;;;-----------------------------------------------------------------------------
 (def Config
-  {:defsize scm/Int  ;; size of the definition seed
+  {:defsize scm/Int   ;; size of the definition seed
    :dbname  scm/Str   ;; database name
    :dbhost  scm/Str   ;; database connection hostname 
    :dbport  scm/Int   ;; database connection port
    :dbuser  scm/Str   ;; database user
-   :dbupwd  scm/Str}) ;; user password
+   :dbupwd  scm/Str   ;; user password
+   :rootname scm/Str  ;; root user
+   :rootpwd scm/Str}) ;; root user password
 
 (defn load-config
   "Load .edn configuration file to get initialization data,
@@ -89,4 +90,37 @@
 ;;;-----------------------------------------------------------------------------
 (defn rate-definition [context id]
   (storage/change-keyval context id :rating inc))
+;;;-----------------------------------------------------------------------------
+
+
+;;;-----------------------------------------------------------------------------
+;;; storage dumping
+;;;-----------------------------------------------------------------------------
+(defn save-storage [context dest]
+  (let [file (io/file dest)]
+    (try
+      (if (.exists file)
+        :exists
+        (if (not (.isDirectory (io/file (.getParent file))))
+          :ivalid
+          (storage/dump-database context (.getPath file))))
+      (catch RuntimeException e :invalid)))) ;; unsupported characters
+
+(defn restore-storage [context dest]
+  (let [file (io/file dest)]
+    (try
+      (if (.exists file)
+        (storage/load-database context dest)
+        :exists)
+      (catch RuntimeException e :invalid))))
+;;;-----------------------------------------------------------------------------
+
+
+;;;-----------------------------------------------------------------------------
+;;; statistics
+;;;-----------------------------------------------------------------------------
+(defn user-stats
+  "Information about users and their definitions."
+  [context]
+  (storage/get-user-stats context))
 ;;;-----------------------------------------------------------------------------

@@ -41,25 +41,6 @@ definition that exceeds length limit, because rules are not for everyone.)")
       :rating " ∞ " :crdate "2015.12.16" :image ""})
     (.close (:conn context))))
 
-(defn dump-database
-  "Dump information from database to a destination."
-  [config dest]
-  (let [context (assoc (core/initialize config) :username "admin")]
-    (= 0 (:out (sh "mongodump"
-                   "--host" (:dbhost context)
-                   "--port" (:dbport context)
-                   "--db" (:dbname context)
-                   "--out" dest)))))
-
-(defn load-database
-  "Load database from dump destination."
-  [config dest]
-  (let [context (assoc (core/initialize config) :username "admin")]
-    (= 0 (:out (sh "mongorestore"
-                   "--host" (:dbhost context)
-                   "--port" (:dbport context)
-                   "--db" (:dbname context)
-                   dest)))))
 
 (defn reset-database! []
   (repopulate-database "resources/config.edn" "resources/data.txt"))

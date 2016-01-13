@@ -47,6 +47,14 @@
   [attrmap]
   (assoc attrmap :autocomplete "off" :autocorrect "off" :autocapitalize "off"))
 
+(defn error-card [msg]
+  (when msg
+    [:div {:class "row"}
+     [:div {:class "card black"}
+      [:div {:class "card-content white-text"}
+       [:span {:class "card-title"} "Whoops!"]
+       [:p msg]]]]))
+
 (defn wrap-main-template [user title & contents]
   (page/html5
    [:head
@@ -86,8 +94,14 @@
           ~[:li (elem/link-to "/" "  HOME ")]
           ~[:li (elem/link-to "/about" " ABOUT")]
           ~@(if user
-              [[:li (elem/link-to "/add" "  NEW ")]
-               [:li (elem/link-to "/logout" "LOGOUT")]]
+              (if (= user "root")
+                [[:li (elem/link-to "/add" "  NEW ")]
+                 [:li (elem/link-to "/stats" " STATS ")]
+                 [:li (elem/link-to "/dump" " DUMP ")]
+                 [:li (elem/link-to "/restore" "RESTORE")]
+                 [:li (elem/link-to "/logout" "LOGOUT")]]
+                [[:li (elem/link-to "/add" "  NEW ")]
+                 [:li (elem/link-to "/logout" "LOGOUT")]])
               [[:li (elem/link-to "/login" " LOGIN")]
                [:li (elem/link-to "/signup" "SIGNUP")]])]]]]]
     [:main contents]
@@ -101,10 +115,21 @@
        ~[:li [:a {:class "btn-floating teal" :href "/about"}
              [:i {:class "material-icons"} "info"]]]
        ~@(if user
-           [[:li [:a {:class "btn-floating teal" :href "/add"}
-                  [:i {:class "material-icons"} "add"]]]
-            [:li [:a {:class "btn-floating teal" :href "/logout"}
-                  [:i {:class "material-icons"} "input"]]]]
+           (if (= user "root")
+             [[:li [:a {:class "btn-floating teal" :href "/add"}
+                    [:i {:class "material-icons"} "verified_user"]]]
+              [:li [:a {:class "btn-floating teal" :href "/stats"}
+                    [:i {:class "material-icons"} "verified_user"]]]
+              [:li [:a {:class "btn-floating teal" :href "/dump"}
+                    [:i {:class "material-icons"} "input"]]]
+              [:li [:a {:class "btn-floating teal" :href "/restore"}
+                    [:i {:class "material-icons"} "verified_user"]]]
+              [:li [:a {:class "btn-floating teal" :href "/logout"}
+                    [:i {:class "material-icons"} "input"]]]]
+             [[:li [:a {:class "btn-floating teal" :href "/add"}
+                    [:i {:class "material-icons"} "add"]]]
+              [:li [:a {:class "btn-floating teal" :href "/logout"}
+                    [:i {:class "material-icons"} "input"]]]])
            [[:li [:a {:class "btn-floating teal" :href "/login"}
                   [:i {:class "material-icons"} "verified_user"]]]
             [:li [:a {:class "btn-floating teal" :href "/signup"}
@@ -142,7 +167,7 @@
    [:div {:class "container"}
     [:h2 {:class "header"}
      [:b {:class "teal-text"} "NTL;JR:"]
-     "  welcome"]
+     (str "  welcome" (case user "root" ", administator" nil "" user))]
     [:div {:class "card-panel teal lighten-5"} home-p1 home-p2]]))
 
 (defn add-template [user & {:keys [definition] :or {definition :empty}}]
@@ -183,6 +208,70 @@
            [:b (:name definition)]
            "\". Thanks for sharing!"]]])]])))
 
+(defn make-user-card [{:keys [name definitions]}]
+  [:div {:class "row"}
+     [:div {:class (str "card " (get-random-color (str name definitions)))}
+      [:div {:class "card-content white-text"}
+       [:span {:class "card-title"} name]
+       [:p [:b (str definitions)]
+        (if (= definitions 1) " definition" " definitions")]]]])
+
+(defn stats-template [results]
+  (wrap-main-template
+   "root"
+   "User statistics | NTLJR"
+   [:div {:class "container"}
+    [:h2 {:class "header"}
+       [:b {:class "teal-text"} "NTL;JR:"]
+       "  user statistics"]
+    (if results
+      (map (fn [res]
+             (make-user-card res))
+           results)
+      "No one has defined anything yet :(")]))
+
+(defn dump-template
+  ([] (dump-template nil))
+  ([err]
+   (wrap-main-template
+    "root"
+    "Dump storage | NTLJR"
+    (form/form-to
+     [:post "/dump"]
+     [:div {:class "container"}
+      [:h2 {:class "header"}
+       [:b {:class "teal-text"} "NTL;JR:"]
+       "  dump"]
+      [:div {:class "row"}
+       [:div {:class "card-panel teal lighten-5"}
+        [:div {:class "row"}
+         [:div {:class "input-field"}
+          (form/text-field (unautomate {:id "locpath"}) "path")
+          (form/label {:for "locpath"} "lpath" "Export to:")]]
+        (form/submit-button {:class "btn waves-effect waves-light"} "Export")]]
+      (error-card err)]))))
+
+(defn restore-template
+  ([] (restore-template nil))
+  ([err]
+   (wrap-main-template
+    "root"
+    "Restore storage | NTLJR"
+    (form/form-to
+     [:post "/restore"]
+     [:div {:class "container"}
+      [:h2 {:class "header"}
+       [:b {:class "teal-text"} "NTL;JR:"]
+       "  restore"]
+      [:div {:class "row"}
+       [:div {:class "card-panel teal lighten-5"}
+        [:div {:class "row"}
+         [:div {:class "input-field"}
+          (form/text-field (unautomate {:id "local_path"}) "path")
+          (form/label {:for "local_path"} "l_path" "Import from:")]]
+        (form/submit-button {:class "btn waves-effect waves-light"} "Import")]]
+      (error-card err)]))))
+
 (defn search-template [user & {:keys [results name] :or nil}]
   (wrap-main-template
    user
@@ -201,14 +290,6 @@
     [:h2 {:class "header"}
      [:b {:class "teal-text"} "NTL;JR:"]
      "  about us - still deciding..."]]))
-
-(defn auth-error-card [msg]
-  (when msg
-    [:div {:class "row"}
-     [:div {:class "card black"}
-      [:div {:class "card-content white-text"}
-       [:span {:class "card-title"} "Whoops!"]
-       [:p msg]]]]))
 
 (defn login-template [user err]
   (wrap-main-template
@@ -231,7 +312,7 @@
          (form/text-field (unautomate {:id "pwd_field" :type "password"}) "pwd")
          (form/label {:for "pwd_field"} "pw" "Password")]]
        (form/submit-button {:class "btn waves-effect waves-light"} "Login")]]
-     (auth-error-card err)])))
+     (error-card err)])))
 
 (defn signup-template [user err]
   (wrap-main-template
@@ -258,7 +339,7 @@
          (form/text-field (unautomate {:id "pwd2_field" :type "password"}) "p2")
          (form/label {:for "pwd2_field"} "pwd2" "Repeat password")]]
        (form/submit-button {:class "btn waves-effect waves-light"} "Sign Up")]]
-     (auth-error-card err)])))
+     (error-card err)])))
 
 (defn not-found-template [user]
   (wrap-main-template

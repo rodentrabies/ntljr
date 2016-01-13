@@ -3,6 +3,8 @@
  :dbname "ntljr"
  :dbport 27017
  :dbuser "ntljr"
- :dbupwd "ntljr"}
+ :dbupwd "ntljr"
+ :rootname "root"
+ :rootpwd "root"}
 
 

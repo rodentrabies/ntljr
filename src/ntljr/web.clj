@@ -40,6 +40,61 @@
              :definition (core/add-definition @context name text image))})
     (not-found-response context)))
 
+(defn stats-get-response [context]
+  (if (and (auth/authenticated? @context)
+           (auth/root-user? @context))
+    (wrap-encoding
+     {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (layout/stats-template (core/user-stats @context))})
+    (not-found-response context)))
+
+(defn dump-get-response [context]
+  (if (and (auth/authenticated? @context)
+           (auth/root-user? @context))
+    (wrap-encoding
+     {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (layout/dump-template)})
+    (not-found-response context)))
+
+(defn dump-post-response [context path]
+  (if (and (auth/authenticated? @context)
+           (auth/root-user? @context))
+    (let [res (core/save-storage @context path)]
+      (wrap-encoding
+       {:status 200
+        :headers {"Content-Type" "text/html"}
+        :body (layout/dump-template 
+               (case res
+                 :invalid "Invalid storage path."
+                 :exists "File already exists."
+                 nil))}))
+    (not-found-response context)))
+
+(defn restore-get-response [context]
+  (if (and (auth/authenticated? @context)
+           (auth/root-user? @context))
+    (wrap-encoding
+     {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (layout/restore-template)})
+    (not-found-response context)))
+
+(defn restore-post-response [context path]
+  (if (and (auth/authenticated? @context)
+           (auth/root-user? @context))
+    (let [res (core/restore-storage @context path)]
+      (wrap-encoding
+       {:status 200
+        :headers {"Content-Type" "text/html"}
+        :body (layout/restore-template 
+               (case res
+                 :invalid "Invalid storage path."
+                 :exists "No such file/directory."
+                 nil))}))
+    (not-found-response context)))
+
 (defn search-get-response [context]
   (wrap-encoding
    {:status 200
@@ -114,6 +169,11 @@
    (GET  "/" [] (home-get-response context))
    (GET  "/add" [] (add-get-response context))
    (POST "/add" [name text image] (add-post-response context name text image))
+   (GET  "/stats" [] (stats-get-response context))
+   (GET  "/dump" [] (dump-get-response context))
+   (POST "/dump" [path] (dump-post-response context path))
+   (GET  "/restore" [] (restore-get-response context))
+   (POST "/restore" [path] (restore-post-response context path))
    (POST "/search" [name] (search-post-response context name))
    (GET  "/search/:name" [name] (result-get-response context name))
    (POST "/search/:name" [name rate] (result-post-response context name rate))
